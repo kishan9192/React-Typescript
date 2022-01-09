@@ -206,6 +206,7 @@ const TodoList = (props: PropType) => {
     setTimeout(() => {
       setActionPerformed(false);
     }, 500);
+    //test
     // setTodoItems(todoItems.filter((listItem) => listItem !== item));
   };
 
