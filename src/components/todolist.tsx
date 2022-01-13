@@ -4,80 +4,6 @@ import { Button, Text, Modal, Toast } from "@innovaccer/design-system";
 import "@innovaccer/design-system/css";
 import { MessageAppearance } from "@innovaccer/design-system/dist/core/common.type";
 import { Dispatch } from "react";
-
-/**
- * loading: false
- * data
- * error: undefined
- *
- * 16.8 => batching updates not reliable
- *
- * setLoading(true)
- * setError(false);
- *
- * const [loading] = React.useState()
- * const [error] = React.useState()
- *
- *
- * const reducer = (state, action): state => {
- *  switch (action.type) {
- *      case 'ADD_TODO_API_STARTED':
- *          return {
- *              ...state,
- *              loading: true,
- *              error: null
- *          }
- *  }
- * }
- *
- * const [state, dispatch] = React.useReducer<{
- *  loading: boolean;
- *  error: string | null;
- * }>(reducer, {
- *  loading: false,
- *  error: null,
- * })
- *
- *
- * const [state, setState] = React.useState({
- *  loading: false,
- *  error: null,
- *  data: {
- *    todos: []
- *  }
- * });
- *
- * const onTodoAdd = (text: string) => {
- *  setState(prevState => ({
- *      ...prevState,
- *      loading: true,
- *      error: null,
- *     data: {
- *          ...prevState.data,
- *          todos: []
- *      }
- *  }))
- *
- *  this.setState({ loading: true, error: null });
- *
- *  // immerjs
- *  import produce from 'immer';
- *
- * setState(prevState =>
- *   produce(prevState, draft => {
- *      draft.loading = true;
- *      draft.error = null;
- *      draft.todos = [];
- *   })
- * )
- *
- * // lodash
- *
- * import get from 'lodash-es/get';
- * get(obj, 'a.b.c', 'default');
- *
- *
- */
 import React, { useEffect, useState } from "react";
 import { addItem, deleteItem } from "../redux/action";
 import { IState } from "../redux/reducer";
@@ -88,10 +14,6 @@ interface IMapDispatchToProps {
   addTodoDispatch: (item: string) => void;
   deleteTodoDispatch: (item: string) => void;
 }
-
-type DispatchType = {
-  (): (e: string) => void;
-};
 
 interface IMapStateToProps {
   todoItemsState: string[];
@@ -122,7 +44,6 @@ const TodoList = (props: PropType) => {
     const addTodo = (item: string) => {
       if (props.addTodoDispatch && props.todoItemsState) {
         props.addTodoDispatch(item);
-        console.log(props.todoItemsState);
       }
       setToastType("success");
       setIsFormOpen(!isFormOpen);
@@ -199,15 +120,12 @@ const TodoList = (props: PropType) => {
     setToastType("alert");
     if (props.deleteTodoDispatch && props.todoItemsState) {
       props.deleteTodoDispatch(item);
-      console.log(props.todoItemsState);
     }
 
     setActionPerformed(true);
     setTimeout(() => {
       setActionPerformed(false);
     }, 500);
-    //test
-    // setTodoItems(todoItems.filter((listItem) => listItem !== item));
   };
 
   const toggleForm = (e: React.MouseEvent<HTMLButtonElement>) => {
@@ -224,30 +142,13 @@ const TodoList = (props: PropType) => {
     return <Toast appearance={toastType} title={title} />;
   };
 
-  // function closeToast () {
-  //     let x = document.querySelector<HTMLDivElement>('.toastMessage')
-  //     x.style.display = "none";
-  //     console.log(typeof(x));
-  // }
-
   return (
     <div>
       TodoList
       <button onClick={(e) => toggleForm(e)}> Add Item </button>
       {isFormOpen && <CaptureTodo />}
       <DisplayTodos />
-      {/* <div className = "toastMessage">
-                <Toast onClose={closeToast} appearance="alert" title="Item Deleted!" />
-            </div> */}
       {actionPerformed && showToast()}
-      <p
-        style={{
-          color: "var(--text-destructive)",
-          fontWeight: "var(--font-weight-bold)",
-        }}
-      >
-        Some text in a paragraph
-      </p>
     </div>
   );
 };
