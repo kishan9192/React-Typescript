@@ -1,0 +1,29 @@
+.toast {
+  position: relative;
+  display: inline;
+  left: 100%;
+  animation-duration: 2s;
+  animation-iteration-count: 1;
+  animation-name: slideinToast;
+}
+
+@keyframes slideinToast {
+  0% {
+    left: 100%;
+  }
+  50% {
+    left: 15%;
+  }
+  100% {
+    left: 100%;
+  }
+}
+
+input {
+  border-radius: 20;
+}
+input:focus {
+  outline: rgb(100, 182, 248) solid 2px;
+  border: 0px;
+  border-style: none;
+}

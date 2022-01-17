@@ -1,0 +1,43 @@
+// localhost:3000/care-management
+
+/**
+ * src
+ * - interfaces
+ *  - entities
+ *     - todoList
+ *          index.ts => TodoListItem    
+ *  - api => codebase
+ * - routes
+ *   - careManagement
+ *      - atoms
+ *          ListItem.tsx
+ *      - helpers
+ *      - hooks
+ *      index.tsx
+ * - reducer
+ *      - careManagement
+ *          -  todoList
+ *              actions.ts
+ *              reducer.ts
+ * - helpers => business logic - date - MM/DD/YYYY
+ * - utils => generic helpers
+ * 
+ */
+
+
+/**
+ * Using `formik`: 1.5.4 (or latest) - form creation - explore
+ *
+ * Heading
+ * 
+ * Label
+ * Textarea
+ * Add - primary appearance
+ * Clear - secondary appearance
+ * 
+ * List of added items
+ * 
+ * Text - actions delete and edit (inline replace by input)
+ */
+
+ overflow elipsis (...) -> tooltip, modal
