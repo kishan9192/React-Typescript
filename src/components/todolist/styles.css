@@ -1,41 +1,24 @@
 .toast {
   position: relative;
   display: inline;
-  left: 990px;
-  animation-duration: 1.2s;
+  left: 100%;
+  animation-duration: 2s;
   animation-iteration-count: 1;
   animation-name: slideinToast;
 }
 
 @keyframes slideinToast {
   0% {
-    left: 990px;
+    left: 100%;
   }
   50% {
-    left: 170px;
+    left: 15%;
   }
   100% {
-    left: 990px;
+    left: 100%;
   }
 }
 
-@keyframes slideinMobile {
-  0% {
-    left: 990px;
-  }
-  50% {
-    left: 100px;
-  }
-  100% {
-    left: 990px;
-  }
-}
-
-@media only screen and (max-width: 600px) {
-  .toast {
-    animation-name: slideinMobile;
-  }
-}
 input {
   border-radius: 20;
 }

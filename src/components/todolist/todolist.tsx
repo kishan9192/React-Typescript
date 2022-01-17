@@ -1,109 +1,87 @@
-/* eslint-disable react-hooks/exhaustive-deps */
-/* eslint-disable @typescript-eslint/no-unused-vars */
-import { Button, Text, Modal, Toast, Icon } from "@innovaccer/design-system";
+import {
+  Button,
+  Text,
+  Toast,
+  Icon,
+  Modal,
+  Paragraph,
+} from "@innovaccer/design-system";
 import "@innovaccer/design-system/css";
-import { MessageAppearance } from "@innovaccer/design-system/dist/core/common.type";
-import { Dispatch } from "react";
-import React, { useEffect, useState } from "react";
-import { addItem, deleteItem, editItem } from "../../reducer/todolist/action";
+import { useState, Dispatch } from "react";
+import { connect } from "react-redux";
+import { Formik } from "formik";
+import * as Yup from "yup";
+
 import {
   IDispatch,
-  IMapDispatchToProps,
   ItemType,
-  IMapStateToProps,
-  PropType,
+  IProps,
   IState,
+  IToastState,
 } from "../../interfaces/entities/todolist";
-import { connect } from "react-redux";
-import { Formik, Form, Field, ErrorMessage, useFormik } from "formik";
+import { addItem, deleteItem, editItem } from "../../reducer/todolist/action";
+import { hideToast, showToast } from "../../reducer/toast/actions";
 import "./styles.css";
 
-const TodoList = (props: PropType) => {
-  const [todoItems, setTodoItems] = useState<Array<ItemType>>([]);
-  const [isFormOpen, setIsFormOpen] = useState(false);
-  const [toastType, setToastType] = useState<MessageAppearance>();
-  const [actionPerformed, setActionPerformed] = useState(false);
-  const [selectedItem, setSelectedItem] = useState({
-    updatedValue: "",
-    oldValue: "",
-    id: "",
-  });
+const TodoList: React.FC<IProps> = (props) => {
+  const [selectedID, setSelectedID] = useState("");
+  const [modalOpen, setModalOpen] = useState(false);
+  const [modalContent, setModalContent] = useState("");
+  const editTodo = (todo: ItemType) => {
+    setSelectedID(todo.id);
+  };
 
-  useEffect(() => {
-    if (props.todoItemsState) setTodoItems(props.todoItemsState);
-  }, [props.todoItemsState]);
-
-  const CaptureTodo = () => {
-    const [todoValue, setTodoValue] = useState("");
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-      setTodoValue(e.target.value);
-    };
-
+  const renderModal = () => {
     return (
       <Modal
-        open={isFormOpen}
-        dimension="small"
-        backdropClose={true}
-        onClose={() => setIsFormOpen(!isFormOpen)}
+        open={modalOpen}
+        dimension={"medium"}
+        backdropClose
+        onClose={() => setModalOpen(false)}
         headerOptions={{
-          heading: "Add Item",
+          heading: "Item Description",
         }}
-        footer={
-          <>
-            <Button
-              className="mr-4"
-              appearance="alert"
-              onClick={() => setIsFormOpen(!isFormOpen)}
-            >
-              Cancel
-            </Button>
-            <Button appearance="primary" onClick={() => addTodo(todoValue)}>
-              Submit
-            </Button>
-          </>
-        }
       >
-        <form onSubmit={(e) => e.preventDefault()}>
-          <input type="text" value={todoValue} onChange={handleChange} />
-        </form>
+        <Paragraph>{modalContent}</Paragraph>
       </Modal>
     );
   };
 
-  const editTodo = (todo: ItemType) => {
-    setSelectedItem({ ...selectedItem, oldValue: todo.item, id: todo.id });
+  const modalHelper = (htmlElementID: string) => {
+    const element = document.getElementById(htmlElementID);
+    if (element && element.offsetWidth < element.scrollWidth) {
+      setModalOpen(true);
+      setModalContent(element?.innerText);
+    }
   };
 
   const DisplayTodos = () => {
     return (
       <div className="mt-8">
-        {todoItems.map((todo, index) => {
+        {props.todoItemsState.map((todo, index) => {
           return (
             <div
-              style={{ borderRadius: 10 }}
+              style={{ borderRadius: 10, textAlign: "left" }}
               className="bg-primary py-3 mb-5 d-flex flex-row align-items-center"
               key={index}
             >
               <div
+                id={index.toString()}
+                onClick={() => modalHelper(index.toString())}
+                className="ellipsis--noWrap w-75 mr-6 pl-6"
                 style={{
-                  display: "block",
-                  paddingLeft: 20,
-                  marginRight: 10,
-                  width: "60%",
+                  fontWeight: "var(--font-weight-bold)",
+                  color: "var(--text-white)",
+                  fontSize: "var(--font-size-m)",
                 }}
               >
-                <Text
-                  // className="flex-wrap"
-                  weight="strong"
-                  size="regular"
-                  appearance="white"
-                >
+                <Text weight="strong" size="regular" appearance="white">
                   {todo.item}
                 </Text>
               </div>
 
               <Icon
-                className="ml-8 cursor-pointer"
+                className="mr-5 cursor-pointer"
                 name="edit"
                 size={20}
                 appearance="accent1_lighter"
@@ -124,60 +102,66 @@ const TodoList = (props: PropType) => {
   };
 
   const deleteItem = (id: string) => {
-    setToastType("alert");
-    if (props.deleteTodoDispatch && props.todoItemsState) {
-      props.deleteTodoDispatch(id);
+    props.deleteTodoDispatch(id);
+    if (id === selectedID) {
+      setSelectedID("");
     }
-    if (id === selectedItem.id) {
-      setSelectedItem({ oldValue: "", updatedValue: "", id: "" });
-    }
-    setActionPerformed(true);
+    props.displayToast({
+      appearance: "alert",
+      title: "Item Deleted",
+      duration: 2000,
+      toastVisible: true,
+    });
     setTimeout(() => {
-      setActionPerformed(false);
-    }, 1200);
+      props.hideToast(false);
+    }, 2000);
   };
 
   const addTodo = (item: string) => {
-    if (props.addTodoDispatch && props.todoItemsState) {
-      props.addTodoDispatch(item);
-    }
-    setToastType("success");
-    setIsFormOpen(!isFormOpen);
-    setActionPerformed(true);
+    props.addTodoDispatch(item);
+    props.displayToast({
+      appearance: "success",
+      title: "Item Added",
+      duration: 2000,
+      toastVisible: true,
+    });
     setTimeout(() => {
-      setActionPerformed(false);
-    }, 1200);
+      props.hideToast(false);
+    }, 2000);
   };
 
-  const toggleForm = (e: React.MouseEvent<HTMLButtonElement>) => {
-    setIsFormOpen(!isFormOpen);
-  };
-
-  const showToast = () => {
-    let title: string;
-    if (toastType === "alert") {
-      title = "Item Deleted!";
-    } else {
-      title = "Item Added!";
-    }
+  const renderToast = () => {
     return (
       <div className="toast">
-        <Toast appearance={toastType} title={title} />
+        <div className="position-absolute" style={{ top: 400 }}>
+          <Toast
+            appearance={props.toastState?.appearance}
+            title={props.toastState?.title}
+          />
+        </div>
       </div>
     );
   };
 
-  const captureForm = () => {
+  const CaptureForm = ({ id }: { id?: string }) => {
+    const TodoSchema = Yup.object().shape({
+      todo: Yup.string().min(2, "Too short!").required("Required"),
+    });
+    let initialValue = props.todoItemsState.find(
+      (element) => element.id === id
+    );
+    const initialTodo = initialValue ? initialValue.item : "";
     return (
       <Formik
         initialValues={{
-          todo: selectedItem.oldValue ? selectedItem.oldValue : "",
+          todo: initialTodo,
         }}
         enableReinitialize={true}
+        validationSchema={TodoSchema}
         onSubmit={(values, { resetForm }) => {
-          if (selectedItem.id && props.editTodoDispatch) {
-            props.editTodoDispatch({ id: selectedItem.id, item: values.todo });
-            setSelectedItem({ oldValue: "", updatedValue: "", id: "" });
+          if (id && props.editTodoDispatch) {
+            props.editTodoDispatch({ id, item: values.todo });
+            setSelectedID("");
           } else {
             addTodo(values.todo);
           }
@@ -200,14 +184,13 @@ const TodoList = (props: PropType) => {
             <form onSubmit={handleSubmit}>
               <label
                 htmlFor="todo"
+                className="d-block mb-6"
                 style={{
                   textAlign: "left",
-                  display: "block",
-                  fontWeight: "bold",
-                  marginBottom: 10,
+                  fontWeight: "var(--font-weight-bold)",
                 }}
               >
-                Add a task
+                {id ? "Update Task" : "Add new task"}
               </label>
               <div>
                 <input
@@ -219,19 +202,29 @@ const TodoList = (props: PropType) => {
                   onChange={handleChange}
                   onBlur={handleBlur}
                 />
+                {errors.todo && touched.todo ? (
+                  <Text
+                    appearance="destructive"
+                    weight="medium"
+                    className="d-block mt-3"
+                    style={{ textAlign: "left" }}
+                  >
+                    {errors.todo}
+                  </Text>
+                ) : null}
               </div>
               <div className="d-flex flex-row justify-content-start mt-7">
                 <Button
                   appearance="alert"
                   type="button"
-                  className="outline mr-6"
+                  className="outline mr-3"
                   onClick={handleReset}
                   disabled={!dirty || isSubmitting}
                 >
                   Clear
                 </Button>
                 <Button appearance="primary" type="submit">
-                  {selectedItem.id ? "Update" : "Add"}
+                  {id ? "Update" : "Add"}
                 </Button>
               </div>
             </form>
@@ -245,47 +238,49 @@ const TodoList = (props: PropType) => {
     <div className="mt-10">
       <h1>Todo List</h1>
       <div className="d-flex align-items-start flex-row mt-8 pb-4 ">
-        <div className="mx-10">{captureForm()}</div>
+        <div className="mx-10">{<CaptureForm id={selectedID} />}</div>
         <div
+          className="d-flex"
           style={{
-            display: "flex",
             height: "400px",
-            borderWidth: "1px",
-            borderStyle: "solid",
-            borderColor: "gray",
+            border: "1px solid gray",
           }}
         ></div>
 
         <div
           style={{
             width: "30%",
-            overflowWrap: "break-word",
             marginLeft: 70,
           }}
         >
-          <DisplayTodos />
+          {props.todoItemsState.length > 0 ? (
+            <DisplayTodos />
+          ) : (
+            <Text>{"Your items will appear here"}</Text>
+          )}
+          {modalOpen && renderModal()}
         </div>
-        {actionPerformed && showToast()}
+        {props.toastState.toastVisible && renderToast()}
       </div>
     </div>
   );
 };
 
-function mapStateToProps(state: IState): IMapStateToProps {
+function mapStateToProps(state: IState) {
   return {
-    todoItemsState: state.todoItems,
+    todoItemsState: state.todos.todoItems,
+    toastState: state.toast,
   };
 }
 
-// need to import Dispatch from react, then pass the action type in Dispatch as type parameter
-function mapDispatchToProps(
-  dispatch: Dispatch<IDispatch>
-): IMapDispatchToProps {
+function mapDispatchToProps(dispatch: Dispatch<IDispatch>) {
   return {
     addTodoDispatch: (payload: string) => dispatch(addItem(payload)),
     deleteTodoDispatch: (payload: string) => dispatch(deleteItem(payload)),
     editTodoDispatch: (payload: { id: string; item: string }) =>
       dispatch(editItem(payload)),
+    displayToast: (payload: IToastState) => dispatch(showToast(payload)),
+    hideToast: (payload: boolean) => dispatch(hideToast(payload)),
   };
 }
 
