@@ -2,99 +2,80 @@ import {
   Button,
   Text,
   Toast,
-  Icon,
   Modal,
   Paragraph,
 } from "@innovaccer/design-system";
 import "@innovaccer/design-system/css";
-import { useState, Dispatch } from "react";
+import { useState, Dispatch, useRef } from "react";
 import { connect } from "react-redux";
 import { Formik } from "formik";
 import * as Yup from "yup";
+import { ThunkDispatch } from "redux-thunk";
 
 import {
   IDispatch,
-  ItemType,
+  ITodoItem,
   IProps,
   IState,
-  IToastState,
+  IToast,
+  itemAction,
+  toastAdd,
+  toastDelete,
+  toastUpdate,
 } from "../../interfaces/entities/todolist";
 import { addItem, deleteItem, editItem } from "../../reducer/todolist/action";
-import { hideToast, showToast } from "../../reducer/toast/actions";
+import { hideToast, showToast, customThunk } from "../../reducer/toast/actions";
 import "./styles.css";
+import ListItem from "./ListItem";
 
 const TodoList: React.FC<IProps> = (props) => {
   const [selectedID, setSelectedID] = useState("");
-  const [modalOpen, setModalOpen] = useState(false);
-  const [modalContent, setModalContent] = useState("");
-  const editTodo = (todo: ItemType) => {
+  const [modalState, setModalState] = useState({ open: false, content: "" });
+  const parentRef = useRef<HTMLDivElement>(null);
+
+  const getParentWidth = () => {
+    if (parentRef.current && parentRef.current.offsetWidth) {
+      return parentRef.current.offsetWidth;
+    }
+    return 0;
+  };
+
+  const editTodo = (todo: ITodoItem) => {
     setSelectedID(todo.id);
   };
 
   const renderModal = () => {
     return (
       <Modal
-        open={modalOpen}
+        open={modalState.open}
         dimension={"medium"}
         backdropClose
-        onClose={() => setModalOpen(false)}
+        onClose={() => setModalState({ ...modalState, open: false })}
         headerOptions={{
           heading: "Item Description",
         }}
       >
-        <Paragraph>{modalContent}</Paragraph>
+        <Paragraph style={{ overflowWrap: "break-word" }}>
+          {modalState.content}
+        </Paragraph>
       </Modal>
     );
   };
 
-  const modalHelper = (htmlElementID: string) => {
-    const element = document.getElementById(htmlElementID);
-    if (element && element.offsetWidth < element.scrollWidth) {
-      setModalOpen(true);
-      setModalContent(element?.innerText);
-    }
-  };
-
   const DisplayTodos = () => {
     return (
-      <div className="mt-8">
+      <div className="mt-8" ref={parentRef}>
         {props.todoItemsState.map((todo, index) => {
           return (
-            <div
-              style={{ borderRadius: 10, textAlign: "left" }}
-              className="bg-primary py-3 mb-5 d-flex flex-row align-items-center"
+            <ListItem
               key={index}
-            >
-              <div
-                id={index.toString()}
-                onClick={() => modalHelper(index.toString())}
-                className="ellipsis--noWrap w-75 mr-6 pl-6"
-                style={{
-                  fontWeight: "var(--font-weight-bold)",
-                  color: "var(--text-white)",
-                  fontSize: "var(--font-size-m)",
-                }}
-              >
-                <Text weight="strong" size="regular" appearance="white">
-                  {todo.item}
-                </Text>
-              </div>
-
-              <Icon
-                className="mr-5 cursor-pointer"
-                name="edit"
-                size={20}
-                appearance="accent1_lighter"
-                onClick={() => editTodo(todo)}
-              />
-              <Button
-                className="ml-auto mr-8"
-                onClick={() => deleteItem(todo.id)}
-                aria-label="Delete"
-                icon="delete"
-                size="tiny"
-              />
-            </div>
+              index={index}
+              todo={todo}
+              editTodo={editTodo}
+              deleteItem={deleteItem}
+              parentWidth={getParentWidth()}
+              setModalState={setModalState}
+            />
           );
         })}
       </div>
@@ -106,28 +87,12 @@ const TodoList: React.FC<IProps> = (props) => {
     if (id === selectedID) {
       setSelectedID("");
     }
-    props.displayToast({
-      appearance: "alert",
-      title: "Item Deleted",
-      duration: 2000,
-      toastVisible: true,
-    });
-    setTimeout(() => {
-      props.hideToast(false);
-    }, 2000);
+    props.customThunk(toastDelete);
   };
 
-  const addTodo = (item: string) => {
+  const addItem = (item: string) => {
     props.addTodoDispatch(item);
-    props.displayToast({
-      appearance: "success",
-      title: "Item Added",
-      duration: 2000,
-      toastVisible: true,
-    });
-    setTimeout(() => {
-      props.hideToast(false);
-    }, 2000);
+    props.customThunk(toastAdd);
   };
 
   const renderToast = () => {
@@ -161,9 +126,10 @@ const TodoList: React.FC<IProps> = (props) => {
         onSubmit={(values, { resetForm }) => {
           if (id && props.editTodoDispatch) {
             props.editTodoDispatch({ id, item: values.todo });
+            props.customThunk(toastUpdate);
             setSelectedID("");
           } else {
-            addTodo(values.todo);
+            addItem(values.todo);
           }
           resetForm();
         }}
@@ -201,6 +167,7 @@ const TodoList: React.FC<IProps> = (props) => {
                   value={values.todo}
                   onChange={handleChange}
                   onBlur={handleBlur}
+                  autoComplete="off"
                 />
                 {errors.todo && touched.todo ? (
                   <Text
@@ -258,7 +225,7 @@ const TodoList: React.FC<IProps> = (props) => {
           ) : (
             <Text>{"Your items will appear here"}</Text>
           )}
-          {modalOpen && renderModal()}
+          {modalState.open && renderModal()}
         </div>
         {props.toastState.toastVisible && renderToast()}
       </div>
@@ -273,14 +240,17 @@ function mapStateToProps(state: IState) {
   };
 }
 
-function mapDispatchToProps(dispatch: Dispatch<IDispatch>) {
+function mapDispatchToProps(
+  dispatch: ThunkDispatch<IState, unknown, itemAction>
+) {
   return {
     addTodoDispatch: (payload: string) => dispatch(addItem(payload)),
     deleteTodoDispatch: (payload: string) => dispatch(deleteItem(payload)),
     editTodoDispatch: (payload: { id: string; item: string }) =>
       dispatch(editItem(payload)),
-    displayToast: (payload: IToastState) => dispatch(showToast(payload)),
+    displayToast: (payload: IToast) => dispatch(showToast(payload)),
     hideToast: (payload: boolean) => dispatch(hideToast(payload)),
+    customThunk: (payload: IToast) => dispatch(customThunk(payload)),
   };
 }
 

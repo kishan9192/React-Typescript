@@ -1,8 +1,19 @@
 import actionCreatorFactory from 'typescript-fsa';
+import { ThunkAction } from 'redux-thunk'
 
-import { IToastState } from "../../interfaces/entities/todolist";
+import { IToast, IState, itemAction } from "../../interfaces/entities/todolist";
 
 const actionCreator = actionCreatorFactory('TOAST')
-const showToast = actionCreator<IToastState>('SHOW_TOAST')
+const showToast = actionCreator<IToast>('SHOW_TOAST')
 const hideToast = actionCreator<boolean>('HIDE_TOAST')
-export { showToast, hideToast }
+
+const customThunk = (payload: IToast): ThunkAction<void, IState, unknown, itemAction> => (dispatch) => {
+    dispatch(showToast(payload))
+    if (payload.duration) {
+        setTimeout(() => {
+            dispatch(hideToast(false))
+        }, payload.duration)
+    }
+}
+
+export { showToast, hideToast, customThunk }

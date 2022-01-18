@@ -5,42 +5,67 @@ export interface IMapDispatchToProps {
     editTodoDispatch?: (payload: { id: string; item: string }) => void;
 }
 
-export interface ItemType {
+export interface ITodoItem {
     item: string;
     id: string;
 };
 
 export interface IMapStateToProps {
-    todoItemsState: ItemType[];
+    todoItemsState: ITodoItem[];
 }
 
 type ToastAppearance = ToastProps["appearance"];
 export interface IProps {
-    todoItemsState: ItemType[];
+    todoItemsState: ITodoItem[];
     addTodoDispatch: (item: string) => void;
     deleteTodoDispatch: (item: string) => void;
     editTodoDispatch: (payload: { id: string; item: string }) => void;
-    toastState: IToastState
-    displayToast: (payload: IToastState) => void
+    toastState: IToast
+    displayToast: (payload: IToast) => void
     hideToast: (payload: boolean) => void
+    customThunk: (payload: IToast) => void
 }
 
-export interface ITodosState {
-    todoItems: ItemType[]
+export interface ITodos {
+    todoItems: ITodoItem[]
 }
 
-export interface IToastState {
+export interface IToast {
     toastVisible: boolean
     title: string,
     appearance: ToastAppearance,
     duration: number
 }
 export interface IState {
-    todos: ITodosState,
-    toast: IToastState
+    todos: ITodos,
+    toast: IToast
 }
 
 export interface IDispatch {
     type: string,
-    payload: string | ItemType | IToastState | boolean
+    payload: string | ITodoItem | IToast | boolean
+}
+export type itemAction = {
+    type: string
+}
+
+export const toastAdd: IToast = {
+    appearance: "success",
+    title: "Item Added!",
+    duration: 2000,
+    toastVisible: true,
+}
+
+export const toastDelete: IToast = {
+    appearance: "alert",
+    title: "Item Deleted!",
+    duration: 2000,
+    toastVisible: true,
+}
+
+export const toastUpdate: IToast = {
+    appearance: "success",
+    title: "Item Updated!",
+    duration: 2000,
+    toastVisible: true,
 }

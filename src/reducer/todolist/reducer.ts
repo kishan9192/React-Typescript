@@ -2,9 +2,9 @@ import { reducerWithInitialState } from "typescript-fsa-reducers";
 import { v4 as uuidv4 } from "uuid";
 
 import { addItem, deleteItem, editItem } from './action';
-import { ITodosState } from "../../interfaces/entities/todolist";
+import { ITodos } from "../../interfaces/entities/todolist";
 
-const INITIAL_STATE: ITodosState = {
+const INITIAL_STATE: ITodos = {
     todoItems: []
 }
 
