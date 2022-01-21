@@ -41,3 +41,215 @@
  */
 
  overflow elipsis (...) -> tooltip, modal
+ text-overflow: ellipsis works in that div only in which the text is overflowing
+ ellipsis--noWrap = white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+
+
+ const onTextChange = (newText: string) => setTodoValue(newText);
+ onChange={event => onTextChange(event.target.value)}
+
+
+
+-------------------------------------------------------------------------------------------
+ state management
+
+show/hide toast
+  showToast
+
+todolist
+  list
+
+form
+  id: prop
+  oldValue => pass as a prop
+
+  data/fields - formik
+  error
+  loading
+
+appState = {
+  id: string | null;
+  list: Array<{
+    id: string;
+    text: string;
+  }>
+  showToast: boolean;
+}
+
+const initialValue = find(todolist).text || "";
+
+return (
+  <>
+    <TodoForm id={id}
+      initialValue={initialValue}
+      onSubmit={newValue => {
+        setState({
+          id,
+          list
+        })
+      }}  />
+    <TodoList
+      items={state.list}
+      onItemClick={(item) => setId(item.id)}
+      deleteItem={id => setState({ list: updatedList})} />
+  </>
+);
+
+JIRA
+
+  Sprint planning
+    - dev planning/discussion - contract, feature walkthrough
+      - Frontend | UI | Proof Of Concept
+    - development - code + testing
+    - dev testing
+    - internal demo
+    - qa testing
+    - PM validate and signoff
+
+
+
+
+<TodoForm />
+  
+  props:
+    id
+    initialValue = ""
+  
+  state: formikState
+    initialValues (derived from initialValue prop)
+
+    add => id (dynamic), content: values.todo
+    update => id, content: values.todo
+    delete => id
+
+-----------------------------------------
+
+    useLayoutEffect..
+
+    import { asyncFactory } from 'typescript-fsa-redux-thunk';
+    import { Dispatch } from 'react';
+
+
+    // type itemAction = {
+      //     toastVisible: boolean,
+      //     title: string,
+      //     appearance: string,
+      //     duration: number
+      // }
+    
+    // const createAsync = asyncFactory<itemAction>(actionCreator)
+
+      // const showToastAsync = createAsync<Dispatch<    { type: string, payload: boolean }>, void>('SHOW_TOAST',
+      //     (dispatch: Dispatch<{ type: string, payload: boolean }>) => {
+      //         setTimeout(() => {
+      //             dispatch(hideToast(false));
+      //         }, 2000)
+      //     })
+
+      const customThunk = (): ThunkAction<> => (dispatch) => {
+  dispatch(updateList({ action: 'DELETE', options: {id}}))
+  dispatch(showToast({ type: 'alert', message: 'Item deleted'}))
+}
+
+
+------------------------------------------------------------------------
+/**
+ *
+ * parentWidth - ref on parent
+ *
+ * state
+ *  showModal: boolean;
+ *
+ * useLayoutEffect
+ *  content => actual width (via child element ref)
+ *  setState({ showModal: actualWidth > parentWidth })
+ *  debugger;
+ *
+ * render
+ *  onClick: () => {
+ *    if (showModal) {
+ *      setModal("")
+ *    }
+ *  }
+ *
+ */
+
+
+---------------------------------------------------------------------------
+
+THUNK-REDUX: https://stackoverflow.com/questions/63881398/how-to-properly-type-a-thunk-with-thunkaction-using-redux-thunk-in-typescript?noredirect=1&lq=1
+
+
+// mapdispatchtoprops object
+// enzyme - testing (component testing)
+// cra - testing support (to check if enzyme is already supported)
+
+
+------------------------------
+Testing dispatch action Dump
+
+
+//   const store = mockStore(initialState);
+  //   it("Should dispatch add item action", () => {
+  //     store.dispatch(addItem("React"));
+  //     const actions = store.getActions();
+  //     const currentStore = store.getState();
+  //     console.log("CurrentStore", currentStore);
+  //     expect(actions).toEqual([{ type: "TODO_LIST/ADD_ITEM", payload: "React" }]);
+  //   });
+
+  //   it("Should dispatch delelte item action", () => {
+  //     store.dispatch(deleteItem("1"));
+  //     const actions = store.getActions();
+  //     const currentStore = store.getState();
+  //     console.log("CurrentStore", currentStore);
+  //     expect(actions).toEqual([{ type: "TODO_LIST/DELETE_ITEM", payload: "1" }]);
+  //   });
+
+  ----------------------------------------
+Hackernoon: formik-react/testing-library : https://hackernoon.com/react-forms-with-formik-and-unit-testing-with-react-testing-library-j0b32c9
+
+https://stackoverflow.com/questions/61782695/mock-react-useref-or-a-function-inside-a-functional-component-with-enzyme-and-je/61789113#61789113
+
+-----------------------------------------------------------------------------------------------
+
+ListItem.test.tsx
+----------------
+//   let initialState = {};
+  //     const store = mockStore(initialState);
+  //     const wrapper2 = mount(<Provider store={store}>
+  //         <TodoList />
+  //       </Provider>);
+  //       it("Modal should render if the text is too large", () => {
+  //         expect(wrapper.find('Modal')).toHaveLength(1)
+  //       })
+
+  //   it("chaging scrollWidth of childRef", () => {
+  //     const mRef = { current: { scrollWidth: 300 } };
+  //     mockedReact.useRef.mockReturnValueOnce(mRef);
+  //     expect(wrapper.find({ "data-test": "refValue" })).toHaveValue(300);
+  //   });
+
+  //   test("should handle click event correctly when previousSibling does not exist", () => {
+  //     const useRefSpy = jest
+  //       .spyOn(React, "useRef")
+  //       .mockReturnValueOnce({ current: { scrollWidth: 300 } });
+  //     wrapper.find({ "data-test": "refValue" });
+  //     expect(useRefSpy).toBeCalledTimes(1);
+  //   });
+
+
+
+  // React Testing Library
+// forms
+// functional Components useEffect, useLayoutEffect
+
+//   const mockedReact = React as jest.Mocked<typeof React>;
+// jest.mock("react", () => {
+//   const originReact = jest.requireActual("react");
+//   const mUseRef = jest.fn();
+//   return {
+//     ...originReact,
+//     useRef: mUseRef,
+//   };
+// });

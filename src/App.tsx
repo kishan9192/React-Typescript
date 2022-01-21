@@ -4,11 +4,11 @@ import store from "./reducer/store";
 import { Provider } from "react-redux";
 function App() {
   return (
-    <div className="App">
-      <Provider store={store}>
+    <Provider store={store}>
+      <div className="App">
         <TodoList />
-      </Provider>
-    </div>
+      </div>
+    </Provider>
   );
 }
 

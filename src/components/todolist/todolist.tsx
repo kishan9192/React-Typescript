@@ -65,7 +65,7 @@ const TodoList: React.FC<IProps> = (props) => {
   const DisplayTodos = () => {
     return (
       <div className="mt-8" ref={parentRef}>
-        {props.todoItemsState.map((todo, index) => {
+        {props.todoItemsState?.map((todo, index) => {
           return (
             <ListItem
               key={index}
@@ -112,7 +112,7 @@ const TodoList: React.FC<IProps> = (props) => {
     const TodoSchema = Yup.object().shape({
       todo: Yup.string().min(2, "Too short!").required("Required"),
     });
-    let initialValue = props.todoItemsState.find(
+    let initialValue = props.todoItemsState?.find(
       (element) => element.id === id
     );
     const initialTodo = initialValue ? initialValue.item : "";
@@ -160,7 +160,7 @@ const TodoList: React.FC<IProps> = (props) => {
               </label>
               <div>
                 <input
-                  id="todo"
+                  name="todo"
                   className="py-5 px-6"
                   placeholder="New Task"
                   type="text"
@@ -171,6 +171,7 @@ const TodoList: React.FC<IProps> = (props) => {
                 />
                 {errors.todo && touched.todo ? (
                   <Text
+                    data-testid="inputError"
                     appearance="destructive"
                     weight="medium"
                     className="d-block mt-3"
@@ -182,6 +183,7 @@ const TodoList: React.FC<IProps> = (props) => {
               </div>
               <div className="d-flex flex-row justify-content-start mt-7">
                 <Button
+                  data-test="clearBtn"
                   appearance="alert"
                   type="button"
                   className="outline mr-3"
@@ -220,14 +222,14 @@ const TodoList: React.FC<IProps> = (props) => {
             marginLeft: 70,
           }}
         >
-          {props.todoItemsState.length > 0 ? (
+          {props.todoItemsState?.length > 0 ? (
             <DisplayTodos />
           ) : (
             <Text>{"Your items will appear here"}</Text>
           )}
           {modalState.open && renderModal()}
         </div>
-        {props.toastState.toastVisible && renderToast()}
+        {props.toastState?.toastVisible && renderToast()}
       </div>
     </div>
   );
@@ -235,8 +237,8 @@ const TodoList: React.FC<IProps> = (props) => {
 
 function mapStateToProps(state: IState) {
   return {
-    todoItemsState: state.todos.todoItems,
-    toastState: state.toast,
+    todoItemsState: state?.todos?.todoItems,
+    toastState: state?.toast,
   };
 }
 
